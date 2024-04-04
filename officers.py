@@ -3,18 +3,11 @@ import database as db
 import datetime 
 from streamlit_option_menu import option_menu
 from PIL import Image 
-import io 
 import psycopg2
 from caseReport import update_db
 import time 
 import base64
 
-st.set_page_config(
-    page_icon='icons/icon.png',
-    page_title='Criminova-Solving Crime Together',
-    layout='wide',
-    
-)
 
 def main():
     st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - Investigators</p>', unsafe_allow_html=True)
