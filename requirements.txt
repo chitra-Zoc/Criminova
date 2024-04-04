@@ -3,7 +3,6 @@ streamlit_option_menu
 bcrypt
 Pillow
 psycopg2-binary 
-base64
 folium
 streamlit_folium
 pandas
