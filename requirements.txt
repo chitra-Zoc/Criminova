@@ -1,0 +1,12 @@
+streamlit
+streamlit_option_menu
+bcrypt
+PIL
+psycopg2
+caseReport
+base64
+folium
+streamlit_folium
+pandas
+numpy
+fuzzywuzzy
