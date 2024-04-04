@@ -1,7 +1,7 @@
 streamlit
 streamlit_option_menu
 bcrypt
-PIL
+Pillow
 psycopg2
 base64
 folium
