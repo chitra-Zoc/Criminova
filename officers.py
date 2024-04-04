@@ -2,7 +2,6 @@ import streamlit as st
 import database as db 
 import datetime 
 from streamlit_option_menu import option_menu
-from PIL import Image 
 import psycopg2
 from caseReport import update_db
 import time 
