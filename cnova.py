@@ -187,10 +187,7 @@ def main():
                             st.error('Invalid Password')
                     else:
                         st.error('User not found')
-                elif username == 'user' and password == 'pass':
-                    st.success("Success")
-                    st.session_state['logged_in'] = True
-                    st.rerun()
+
     
     # After login
     if st.session_state['logged_in']:
