@@ -14,6 +14,8 @@ st.set_page_config(
     layout='wide'
 )
 
+if 'loggedin_user' not in st.session_state:
+    st.session_state.loggedin_user=None
 
 def login_window():
     #3 columns to center the gif image in the ratio 1:3:1
@@ -39,7 +41,7 @@ def landing_page():
         st.image('icons\criminova.gif',use_column_width=True)
         st.markdown("<br>", unsafe_allow_html=True)  
         selected=option_menu(
-            menu_title='',options=['Dashboard','New Report','Case Reports','Ava','Investigators','Authorized Users','Crime Hotspots','Tactic Of Day','From the Past'],
+            menu_title='',options=['Dashboard','New Report','Case Reports','Ava','Investigators','Authorized ','Crime Hotspots','Tactic Of Day','From the Past'],
             styles={
         "container": {"padding": "0!important", "background-color": " #333333"},
         "icon": {"color": "white", "font-size": "15px"}, 
@@ -178,7 +180,10 @@ def main():
                         if bcrypt.checkpw(password.encode(),  binascii.unhexlify(hashed_password[0])):  # Access the hashed password from the fetched result
                             slot5=st.empty()
                             slot5.success('Validation Successful')
+                            st.session_state.loggedin_user=username
                             st.session_state.logged_in=True
+                            conn=db.connect_db() 
+                            db.run_query(conn,f"Update authorized_users set last_logged_in='{datetime.datetime.now()}' where username='{username}'",slot=slot5)
                             slot1.empty()
                             slot2.empty()
                             slot3.empty()
@@ -203,7 +208,7 @@ if __name__ == "__main__":
         caseReport.case_investigation() 
     if selected=='Investigators':
         officers.main() 
-    if selected=='Authorized Users':
-        authorized.auth_interface() 
+    if selected=='Authorized ':
+        authorized.auth_interface(st.session_state.loggedin_user) 
     
     
