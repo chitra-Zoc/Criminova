@@ -449,6 +449,4 @@ def case_investigation():
             with s_col1:
                 st.image('icons\icon.png',width=200)
             with s_col2:
-                # st.markdown('<div style="text-align: center;"><img src:"icons/dashboard_empty.png" alt="Dashboard empty"></div>', unsafe_allow_html=True)
-                # st.write("<img src='icons\icon.png' alt='Paris' style='width:200px'>",unsafe_allow_html=True)
                 st.image('icons\dashboard_empty.png',use_column_width=True)

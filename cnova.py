@@ -6,6 +6,7 @@ import datetime
 import binascii
 import caseReport 
 import officers
+import authorized
 
 st.set_page_config(
     page_icon='icons/icon.png',
@@ -38,13 +39,13 @@ def landing_page():
         st.image('icons\criminova.gif',use_column_width=True)
         st.markdown("<br>", unsafe_allow_html=True)  
         selected=option_menu(
-            menu_title='',options=['Dashboard','New Report','Case Reports','Ava','Investigators','Crime Hotspots','Tactic Of Day','From the Past'],
+            menu_title='',options=['Dashboard','New Report','Case Reports','Ava','Investigators','Authorized Users','Crime Hotspots','Tactic Of Day','From the Past'],
             styles={
         "container": {"padding": "0!important", "background-color": " #333333"},
         "icon": {"color": "white", "font-size": "15px"}, 
         "nav-link": {"font-size": "15px", "text-align": "justify", "margin":"0px", "--hover-color": "#595959"},
         "nav-link-selected": {"background-color": " #00334d"}},
-        icons=['boxes','file-earmark-plus-fill','file-text-fill','chat-square-dots-fill','person-lines-fill','crosshair2','bullseye','clipboard-check-fill'])
+        icons=['boxes','file-earmark-plus-fill','file-text-fill','chat-square-dots-fill','person-lines-fill','person-lines-fill','crosshair2','bullseye','clipboard-check-fill'])
 
         st.button('Log Out',on_click=logout,use_container_width=True)
     return selected
@@ -202,4 +203,7 @@ if __name__ == "__main__":
         caseReport.case_investigation() 
     if selected=='Investigators':
         officers.main() 
+    if selected=='Authorized Users':
+        authorized.auth_interface() 
+    
     
