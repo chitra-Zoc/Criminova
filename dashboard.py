@@ -95,13 +95,13 @@ def combined_gender_chart():
 def main():
     st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - Dashboard</p>', unsafe_allow_html=True)
     with st.container(border=True):
-        st.write('<p style="color: grey; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Daily Cases Trend</p>', unsafe_allow_html=True)
+        st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Daily Cases Trend</p>', unsafe_allow_html=True)
         daily_cases()
     with st.container(border=True):
-        st.write('<p style="color: grey; border-bottom: 1px solid white;font-size: 20px; font-weight: bold">Reported Cases</p>', unsafe_allow_html=True)
+        st.write('<p style="color: white; border-bottom: 1px solid white;font-size: 20px; font-weight: bold">Reported Cases</p>', unsafe_allow_html=True)
         hot_cases() 
     with st.container(border=True):
-        st.write('<p style="color: grey; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Victims and Suspects by Gender</p>', unsafe_allow_html=True)
+        st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Victims and Suspects by Gender</p>', unsafe_allow_html=True)
         combined_gender_chart()
 
 

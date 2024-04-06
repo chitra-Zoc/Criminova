@@ -34,6 +34,8 @@ def update_db(query,value,msg,place):
 
 # if __name__=="__main__":
 def case_investigation():
+    st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - Case Reports</p>', unsafe_allow_html=True)
+
     # Connect to the database and fetch cases
     conn = db.connect_db()
     cases_data = db.fetch_data(conn, table_name='caseReports', data='all', fetch_attributes='caseNo,caseId,case_date,nature_of_case,case_description,caseStatus,investigator')
@@ -46,13 +48,13 @@ def case_investigation():
     styled_df = cases_df.style.apply(apply_style, axis=1)
 
     # Display the DataFrame
-    st.write('<p style="color:white; border-bottom: 1px solid white; font-weight:bold; font-size: 28px; line-height: 1; margin-left: 5px">Case Records </p>', unsafe_allow_html=True)
+    st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Case Records</p>', unsafe_allow_html=True)
     st.dataframe(styled_df, use_container_width=True, hide_index=True,height=150)
 
 # Case Picker Section : 
     
     with st.container(border=True):
-        st.write('<p style="color:white; border-bottom: 1px solid white; font-weight:bold; font-size: 28px; line-height: 1; margin-bottom: 15px;">Case Picker</p>', unsafe_allow_html=True)
+        st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Case Picker</p>', unsafe_allow_html=True)
         if 'selected_case' not in st.session_state:
             st.session_state.selected_case=None 
 

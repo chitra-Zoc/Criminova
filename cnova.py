@@ -8,6 +8,7 @@ import caseReport
 import officers
 import authorized
 import case_mapping
+import dashboard 
 
 st.set_page_config(
     page_icon='icons/icon.png',
@@ -55,7 +56,7 @@ def landing_page():
 
 
 def new_case_report():
-    st.write('<h2 style="color: blue; border-bottom: 1px solid white; margin: 20px 0">Criminova - New Case Report</h2>', unsafe_allow_html=True)
+    st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - New Case Report</p>', unsafe_allow_html=True)
     with st.container(border=True,height=650):
         col1,col2=st.columns([1,1],gap='Large')
         with col1:
@@ -213,5 +214,7 @@ if __name__ == "__main__":
         authorized.auth_interface(st.session_state.loggedin_user) 
     if selected=='Case Mapping':
         case_mapping.main() 
+    if selected=='Dashboard':
+        dashboard.main() 
     
     
