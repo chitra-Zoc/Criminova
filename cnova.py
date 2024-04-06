@@ -7,6 +7,7 @@ import binascii
 import caseReport 
 import officers
 import authorized
+import case_mapping
 
 st.set_page_config(
     page_icon='icons/icon.png',
@@ -41,7 +42,7 @@ def landing_page():
         st.image('icons\criminova.gif',use_column_width=True)
         st.markdown("<br>", unsafe_allow_html=True)  
         selected=option_menu(
-            menu_title='',options=['Dashboard','New Report','Case Reports','Ava','Investigators','Authorized ','Crime Hotspots','Tactic Of Day','From the Past'],
+            menu_title='',options=['Dashboard','New Report','Case Reports','Ava','Investigators','Authorized ','Case Mapping','Tactic Of Day','From the Past'],
             styles={
         "container": {"padding": "0!important", "background-color": " #333333"},
         "icon": {"color": "white", "font-size": "15px"}, 
@@ -210,5 +211,7 @@ if __name__ == "__main__":
         officers.main() 
     if selected=='Authorized ':
         authorized.auth_interface(st.session_state.loggedin_user) 
+    if selected=='Case Mapping':
+        case_mapping.main() 
     
     
