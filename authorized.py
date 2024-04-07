@@ -142,7 +142,7 @@ def auth_interface(user):
             left_column.write('<p style="color: white; border-bottom: 1px solid white; margin-top: 0px; font-size: 20px; font-weight: bold">User Logs</p>', unsafe_allow_html=True)
             left_column.dataframe(data, hide_index=True,use_container_width=True,height=200)
     except Exception as e:
-        st.error(e)
+        st.error(f'Something Wrong with database: {e}')
 
 if __name__=='__main__':
     auth_interface('jay') 
