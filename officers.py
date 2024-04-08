@@ -14,6 +14,7 @@ def main():
     try:
         with current:
             left,right=current.columns([5,2])
+        ###Add new Officer 
             with right.form('Officer Form',clear_on_submit=True):
                 st.write('<p style="color: blue; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Add New Officers</p>', unsafe_allow_html=True)
                 up_id=st.text_input('ID',placeholder='Officer Id (for edit purpose)',label_visibility="collapsed")
@@ -39,8 +40,6 @@ def main():
                         
                     label=st.empty() 
                     conn=db.connect_db()
-                #Get the max_id from the database to check for the officer 
-                    off_id=db.from_db(conn,"select MAX(officer_id) from officers")
                 # If the details filled is to be updated the case runs here 
                     if up_id:
                         conn=db.connect_db()
@@ -55,13 +54,12 @@ def main():
                                 #If the officer is marked to be left or remove the officer from working force 
                                 conn=db.connect_db() 
                                 #See if any case is assigned to him/her
-                                to_check_name=off_exists[0]+': '+str(up_id)
-                                assigned_case=db.get_all(conn,f"select caseid from caseReports where investigator='{to_check_name}'")
-                                if len(assigned_case) ==0:
+                                assigned_case=db.from_db(conn,f"select live_cases from officers where officer_id={up_id}")
+                                if assigned_case[0] ==0:
                                     conn=db.connect_db() 
                                     deleted_off=db.from_db(conn,f"select * from officers where officer_id={up_id}")
                                     conn=db.connect_db() 
-                                    #Add the records to the ex_officers table
+                                #Add the records to the ex_officers table
                                     db.run_query(conn,f"""delete from officers where officer_id={up_id};
                                                 insert into ex_officers(officer_id,joined_date, left_date,contact,solved_ratio,photo,name,revised_case)
                                                 values('{deleted_off[0]}','{deleted_off[5]}','{datetime.datetime.now().date()}','{deleted_off[2]}',{deleted_off[4]/deleted_off[3] if deleted_off[3]!=0 else 0},{psycopg2.Binary(deleted_off[6])},'{deleted_off[1]}',{deleted_off[7]})
@@ -69,9 +67,12 @@ def main():
                                     time.sleep(3)
                                     label.empty() 
                                 else:
-                                    label.error(f"""{to_check_name} has {len(assigned_case)} cases assigned. 
+                                    to_check_name=off_exists[0]+': '+str(up_id)
+                                    conn=db.connect_db() 
+                                    assigned_cases=db.get_all(conn,f"select caseid from casereports where investigator='{to_check_name}' and casestatus='ongoing'")
+                                    label.error(f"""{off_exists[0]} has {assigned_case[0]} cases assigned. 
                                             Assign new investigator for following cases before this:
-                                            {assigned_case}
+                                            {assigned_cases}
                                             """)
                                     time.sleep(3)
                                     label.empty() 
@@ -88,6 +89,7 @@ def main():
                     time.sleep(2)
                     label.empty()
 
+        #### Investigators REcord 
             with left.container(height=800,border=False):
                 st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 25px; font-weight: bold">Investigators Record</p>', unsafe_allow_html=True)
                 conn=db.connect_db() 
@@ -115,6 +117,7 @@ def main():
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif; color:white; font-weight: bold'><b style='color:grey'>Contact:</b> {officer[2]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Joined:</b> {officer[5]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Cases Involved:</b> {officer[3]}</p>
+                                                <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: green;font-weight: bold'><b style='color: grey'> Live Cases:</b> {officer[8]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Cases Solved:</b> {officer[4]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Cases Revised:</b> {officer[7]}</p>
                                             </div>
@@ -144,6 +147,7 @@ def main():
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif; color:white; font-weight: bold'><b style='color:grey'>Contact:</b> {officer[2]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Joined:</b> {officer[5]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Cases Involved:</b> {officer[3]}</p>
+                                                <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: green;font-weight: bold'><b style='color: grey'> Live Cases:</b> {officer[8]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Cases Solved:</b> {officer[4]}</p>
                                                 <p style='margin-bottom: 0px; font-size: 16px; font-family: sans-serif;color: white;font-weight: bold'><b style='color: grey'> Cases Revised:</b> {officer[7]}</p>
                                             </div>
@@ -219,6 +223,6 @@ def main():
                         st.write('No records Found')
     except Exception as e:
         st.warning(f'Something wrong with database {e}')
-        
+
 if __name__=='__main__':
     main()
