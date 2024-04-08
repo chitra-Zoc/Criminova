@@ -57,16 +57,16 @@ def landing_page():
 
 def new_case_report():
     st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - New Case Report</p>', unsafe_allow_html=True)
-    with st.container(border=True,height=650):
+    with st.container(border=True):
         col1,col2=st.columns([1,1],gap='Large')
         with col1:
             conn=db.connect_db()
             case_count=db.from_db(conn,'SELECT MAX(caseNo) FROM CaseReports') 
             case_number=int()
-            if case_count is not None:
-                case_number=int(case_count[0]) + 1 
-            else:
+            if case_count[0] is None:
                 case_number=1
+            else:
+                case_number=int(case_count[0]) + 1 
             st.write(f'<h3 style= color:white; align=left; margin-top=0; font=sans-serif><u>Case No : {case_number}</u></h3> ',unsafe_allow_html=True)
             # Input Case Id : Var=case_id 
             case_id=st.text_input('Case Id: *',placeholder=' * Required')
@@ -76,7 +76,10 @@ def new_case_report():
 
             connection=db.connect_db()
             db_cases=db.fetch_data(connection,fetch_attributes='nature_of_case',table_name='nature_of_case',data='all')
-            cases = [case[0] for case in db_cases]
+            
+            cases=[]
+            if db_cases is not None:
+                cases = [case[0] for case in db_cases]
             cases.append('Other')
             nature_of_case = st.selectbox('Nature of Case: *', options=cases, placeholder='Select or type',index=None)
             cases.pop()
@@ -90,7 +93,9 @@ def new_case_report():
                 st.session_state.other_case=True
 
             other_nature=st.text_input('Nature of Case *',placeholder=nature_of_case,disabled=st.session_state.other_case)
-            is_duplicate,duplicate=db.check_for_duplicates(other_nature,cases)    
+            is_duplicate=False
+            if cases:
+                is_duplicate,duplicate=db.check_for_duplicates(other_nature,cases)    
             warning=st.empty()
             if is_duplicate:
                 warning.info(f'Nature of Case: Did you mean {duplicate}')
@@ -131,6 +136,8 @@ def new_case_report():
                         Insert into caseReports(caseNo,caseId,case_date,nature_of_case,case_description,lat,lng) 
                         values({case_number},'{case_id}','{case_date}','{nature_of_case}','{case_description}',{lat},{lng});
                         UPDATE nature_of_case SET case_count=case_count+1 WHERE nature_of_case='{nature_of_case}';
+                        update caseReports set investigator='None' where caseid='{case_id}';
+                        Insert into case_timeline(caseid,date,activity) values('{case_id}','{datetime.datetime.now().date()}','Case Registered')
                         ''',
                         msg='Case Reported Successfully !',slot=place)
         else:
@@ -203,18 +210,24 @@ def main():
 
 
 if __name__ == "__main__":
+    user_exist=None 
     selected=main()
-    if selected=='New Report':
-        new_case_report()
-    if selected=='Case Reports':
-        caseReport.case_investigation() 
-    if selected=='Investigators':
-        officers.main() 
-    if selected=='Authorized ':
-        authorized.auth_interface(st.session_state.loggedin_user) 
-    if selected=='Case Mapping':
-        case_mapping.main() 
-    if selected=='Dashboard':
-        dashboard.main() 
-    
+    if st.session_state.logged_in:
+        conn=db.connect_db() 
+        user_exist=db.from_db(conn,f"select name from authorized_users where username='{st.session_state.loggedin_user}'")
+    if user_exist:    
+        if selected=='New Report':
+            new_case_report()
+        if selected=='Case Reports':
+            caseReport.case_investigation() 
+        if selected=='Investigators':
+            officers.main() 
+        if selected=='Authorized ':
+            authorized.auth_interface(st.session_state.loggedin_user) 
+        if selected=='Case Mapping':
+            case_mapping.main() 
+        if selected=='Dashboard':
+            dashboard.main(st.session_state.loggedin_user) 
+    else:
+        st.session_state.logged_in=False 
     
