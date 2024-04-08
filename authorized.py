@@ -66,7 +66,7 @@ def auth_interface(user):
                         conn=db.connect_db() 
                         db.run_query(conn,f"""
                                         insert into authorized_users(name,username,role,password,email,contact,image)
-                                        values('{name}','{username}','{role}','{hashed}','{email}','{contact}',{psycopg2.Binary(image)})
+                                        values('{name}','{username.strip()}','{role}','{hashed}','{email}','{contact}',{psycopg2.Binary(image)})
                                     """,placeholder,"Added Successfully")
                     else:   
                         placeholder.error('All Fields Required')
@@ -102,22 +102,26 @@ def auth_interface(user):
                         opt=[users[0] for users in db_users]
                         to_user=st.selectbox('Assign Administrator',options=opt,index=None,placeholder='Select Administrator')
                         state=st.radio('Assign',['Assign Only','Assign and Leave'],label_visibility='collapsed')
+                        placeholder=st.empty() 
                         if st.button(state,use_container_width=True):
-                            placeholder=st.empty() 
-                            conn=db.connect_db() 
-                            if state=='Assign Only':
-                                db.run_query(conn,f"""
-                                                update authorized_users set role='Administrator' where username='{to_user}';
-                                                update authorized_users set role='User' where username='{user}';
-                                             """,placeholder,"Updated Successfully")
+                            if to_user:
+                                conn=db.connect_db() 
+                                if state=='Assign Only':
+                                    db.run_query(conn,f"""
+                                                    update authorized_users set role='Administrator' where username='{to_user}';
+                                                    update authorized_users set role='User' where username='{user}';
+                                                """,placeholder,"Updated Successfully")
+                                else:
+                                    db.run_query(conn,f"""
+                                                    update authorized_users set role='Administrator' where username='{to_user}';
+                                                    delete from authorized_users where username='{user}';
+                                                """,placeholder,"Updated Successfully")
+                                    st.session_state.logged_in=False 
+                                time.sleep(3)
+                                placeholder.empty() 
+                                st.rerun()  
                             else:
-                                db.run_query(conn,f"""
-                                                update authorized_users set role='Administrator' where username='{to_user}';
-                                                delete from authorized_users where username='{user}';
-                                             """,placeholder,"Updated Successfully")
-                            time.sleep(3)
-                            placeholder.empty() 
-                            st.rerun()  
+                                placeholder.error('No user selected.')
 
         if system_admin[1]=='Administrator':
             with left_column.container(border=True):
