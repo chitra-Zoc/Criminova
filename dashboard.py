@@ -2,6 +2,46 @@ import plotly.express as px
 import pandas as pd
 import database as db
 import streamlit as st
+import datetime
+
+
+
+def get_all_messages():
+    conn=db.connect_db() 
+    msgs=db.get_all(conn,"select * from messages order by date,time")
+    return msgs 
+
+def store_message():
+    st.session_state.store_message=True
+
+
+def msg(user):
+    if 'store_message' not in st.session_state:
+        st.session_state.store_message=False 
+    with st.container(height=400):
+        msgs=get_all_messages() 
+        image='icons\chat.jpg' 
+        if msgs:
+            for date,m_time,message,username in msgs:
+                if date==datetime.datetime.now().date():
+                    date='Today'
+                time=f"{m_time.hour}:{m_time.minute}"
+                st.write(f"""<p style="font-size: 10px; color: green;  margin-bottom: -100px; text-align: center;" >{username}::{date},{time} </p>
+                         """,unsafe_allow_html=True) 
+                st.chat_message(username,avatar=image).write(f"""<p style="margin-top: -10px" >{message}</p>""",unsafe_allow_html=True)
+        else:
+            st.chat_message('Begin Conversation',avatar="icons\criminova.gif").write('Start Messaging')
+    your_message=st.chat_input(on_submit=store_message)
+    placeholder=st.empty() 
+    if st.session_state.store_message:
+        your_message=your_message.replace("'","''")
+        conn=db.connect_db() 
+        db.run_query(conn,f"""Insert into messages(date, time, message, username) 
+                            values('{datetime.datetime.now().date()}','{datetime.datetime.now().time()}','{your_message}','{user}')
+                    """,slot=placeholder)
+        st.session_state.store_message=False 
+        st.rerun() 
+
 
 def hot_cases():
     conn = db.connect_db() 
@@ -92,8 +132,11 @@ def combined_gender_chart():
 
 
 # Display line chart for daily new cases
-def main():
+def main(user):
     st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - Dashboard</p>', unsafe_allow_html=True)
+    c1,c2=st.columns([2,1])
+    with c2:
+        msg(user)
     with st.container(border=True):
         st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Daily Cases Trend</p>', unsafe_allow_html=True)
         daily_cases()
@@ -106,5 +149,6 @@ def main():
 
 
 if __name__=="__main__":
-    main() 
+    main()
+
 
