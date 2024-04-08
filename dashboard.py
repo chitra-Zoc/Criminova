@@ -22,7 +22,7 @@ def hot_cases():
                     )    
         st.plotly_chart(fig,use_container_width=True)
     except Exception:
-        st.error('Something went wrong')
+        st.error('Insufficient Records to generate')
 
 # Load daily new cases data
 def daily_cases():
@@ -43,7 +43,7 @@ def daily_cases():
         # Display the line chart
         st.plotly_chart(fig,use_container_width=True)
     except Exception as e:
-        st.error('Something went wrong')
+        st.error(f'Something went wrong {e}')
 
 def combined_gender_chart():
     conn=db.connect_db() 
