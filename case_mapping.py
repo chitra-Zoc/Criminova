@@ -46,11 +46,11 @@ def map_lat_long(query,Additional=''):
         conn=db.connect_db() 
         total_cases=db.from_db(conn,f"select count (caseid) from caseReports where  lat IN ({all_lat}) and lng IN ({all_lng}) {Additional}")
         conn=db.connect_db() 
-        ongoing_cases=db.from_db(conn,f"select count (caseid) from caseReports where  lat={location[0]} and lng={location[1]} {Additional} and casestatus='ongoing'")
+        ongoing_cases=db.from_db(conn,f"select count (caseid) from caseReports where lat IN ({all_lat}) and lng IN ({all_lng}) {Additional} and casestatus='ongoing'")
         conn=db.connect_db() 
-        closed_cases=db.from_db(conn,f"select count (caseid) from caseReports where  lat={location[0]} and lng={location[1]} {Additional} and casestatus='closed'")
+        closed_cases=db.from_db(conn,f"select count (caseid) from caseReports where  lat IN ({all_lat}) and lng IN ({all_lng}) {Additional} and casestatus='closed'")
         conn=db.connect_db() 
-        solved_cases=db.from_db(conn,f"select count (caseid) from caseReports where  lat={location[0]} and lng={location[1]} {Additional} and casestatus='solved'")
+        solved_cases=db.from_db(conn,f"select count (caseid) from caseReports where  lat IN ({all_lat}) and lng IN ({all_lng}) {Additional} and casestatus='solved'")
         html_content = f"""
                 <div style="display: flex; justify-content: center; background-color: #f0f0f0; padding: 5px; transparency: 50%; border-radius: 0px; align-items: center;">
                     <div style="display: inline-block; margin-right: 50px; text-align: center;">
