@@ -9,7 +9,7 @@ import base64
 
 
 def main():
-    st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - Investigators</p>', unsafe_allow_html=True)
+    st.write(f'<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">{db.PROJECT} - Investigators</p>', unsafe_allow_html=True)
     current,past=st.tabs(['Current Investigators','Former Investigators'])
     try:
         with current:
