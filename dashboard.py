@@ -133,7 +133,7 @@ def combined_gender_chart():
 
 # Display line chart for daily new cases
 def main(user):
-    st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - Dashboard</p>', unsafe_allow_html=True)
+    st.write(f'<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">{db.PROJECT} - Dashboard</p>', unsafe_allow_html=True)
     c1,c2=st.columns([2,1])
     with c2:
         msg(user)
