@@ -15,7 +15,7 @@ def map_lat_long(query,Additional=''):
     if data:
         for location in data:
             conn = db.connect_db()
-            cases = db.get_all(conn, f"select caseid,case_date,nature_of_case,case_description,casestatus,investigator from caseReports where lat={location[0]} and lng={location[1]} {Additional}")
+            cases = db.get_all(conn, f"select caseid,case_date,nature_of_case,case_description,casestatus from caseReports where lat={location[0]} and lng={location[1]} {Additional}")
             case_details = ""
             case_details = []
             if cases:
@@ -29,7 +29,6 @@ def map_lat_long(query,Additional=''):
                                     <p><strong>Nature of Case:</strong> {case[2]}</p>
                                     <p><strong>Description:</strong> {case[3]}</p>
                                     <p><strong>Status:</strong> {case[4]}</p>
-                                    <p><strong>Investigator:</strong> {case[5]}</p>
                                 </div>
                             </div>
                         </details>
@@ -75,7 +74,7 @@ def map_lat_long(query,Additional=''):
         st.warning('No records Found')
 
 def main(): 
-    st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - Case Mapping</p>', unsafe_allow_html=True)
+    st.write(f'<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">{db.PROJECT} - Case Mapping</p>', unsafe_allow_html=True)
     conn=db.connect_db() 
     db_cases=db.get_all(conn,"Select nature_of_case from nature_of_case where case_count>0")
     try :
