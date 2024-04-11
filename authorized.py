@@ -131,11 +131,10 @@ def auth_interface(user):
                     remove_opt=[users[0] for users in db_users]
                     to_remove=st.selectbox('UserName',placeholder='Select User to remove',options=remove_opt)
                     conn=db.connect_db() 
-                    remove_user_detail=db.from_db(conn,f"""select name,role,image,last_logged_in,email,contact 
+                    remove_user_detail=db.from_db(conn,f"""select name,role,image,last_logged_in,email,contact,authorized.id
                                 from authorized INNER JOIN officer_record 
                                 ON authorized.id=officer_record.id
                                 where authorized.username='{to_remove}'""")
-                    # with st.container(border=True):
                     st.write(
                         f"""
                                 <div style='display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%;'>
@@ -155,9 +154,9 @@ def auth_interface(user):
                     placeholder=st.empty() 
                     st.write('')
                     if st.button('Remove',use_container_width=True):
-                        conn-db.connect_db() 
+                        conn=db.connect_db() 
                         db.run_query(conn,f"""Delete from authorized where username='{to_remove}';
-                                            insert into officer_archive(id,left_date) values({id},'{datetime.datetime.now().date}');
+                                            insert into officer_archive(id,left_date) values({remove_user_detail[6]},'{datetime.datetime.now().date()}');
                                     """,placeholder,"Removed Successfully")
                         time.sleep(3)
                         placeholder.empty() 
