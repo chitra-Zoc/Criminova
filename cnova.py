@@ -12,7 +12,7 @@ import dashboard
 
 st.set_page_config(
     page_icon='icons/icon.png',
-    page_title='Criminova-Solving Crime Together',
+    page_title=f'{db.PROJECT}-Solving Crime Together',
     layout='wide'
 )
 
@@ -56,7 +56,7 @@ def landing_page():
 
 
 def new_case_report():
-    st.write('<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">Criminova - New Case Report</p>', unsafe_allow_html=True)
+    st.write(f'<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">{db.PROJECT} - New Case Report</p>', unsafe_allow_html=True)
     with st.container(border=True):
         col1,col2=st.columns([1,1],gap='Large')
         with col1:
@@ -184,7 +184,7 @@ def main():
             with col2:
                 if submitted:
                     conn=db.connect_db()
-                    hashed_password=db.fetch_data(conn,table_name='authorized_users',check_attributes=f"username='{username}'",fetch_attributes='password',data='one')
+                    hashed_password=db.fetch_data(conn,table_name='authorized',check_attributes=f"username='{username}'",fetch_attributes='password',data='one')
                     if hashed_password is not None:  # Check if user exists
                         if bcrypt.checkpw(password.encode(),  binascii.unhexlify(hashed_password[0])):  # Access the hashed password from the fetched result
                             slot5=st.empty()
@@ -192,7 +192,7 @@ def main():
                             st.session_state.loggedin_user=username
                             st.session_state.logged_in=True
                             conn=db.connect_db() 
-                            db.run_query(conn,f"Update authorized_users set last_logged_in='{datetime.datetime.now()}' where username='{username}'",slot=slot5)
+                            db.run_query(conn,f"Update authorized set last_logged_in='{datetime.datetime.now()}' where username='{username}'",slot=slot5)
                             slot1.empty()
                             slot2.empty()
                             slot3.empty()
@@ -214,12 +214,12 @@ if __name__ == "__main__":
     selected=main()
     if st.session_state.logged_in:
         conn=db.connect_db() 
-        user_exist=db.from_db(conn,f"select name from authorized_users where username='{st.session_state.loggedin_user}'")
+        user_exist=db.from_db(conn,f"select id from authorized where username='{st.session_state.loggedin_user}'")
     if user_exist:    
         if selected=='New Report':
             new_case_report()
         if selected=='Case Reports':
-            caseReport.case_investigation() 
+            caseReport.case_investigation(st.session_state.loggedin_user) 
         if selected=='Investigators':
             officers.main() 
         if selected=='Authorized ':
