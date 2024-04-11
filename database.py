@@ -6,6 +6,10 @@ import folium
 from streamlit_folium import st_folium
 from fuzzywuzzy import process
 
+PROJECT="CrimeNetX"
+
+
+
 DATABASE_CONFIG= {
     'database': 'Criminova',  
     'user': 'postgres',
