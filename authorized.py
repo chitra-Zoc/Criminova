@@ -62,7 +62,7 @@ def auth_interface(user):
                                         insert into officer_record(name,contact,email,joined_date,image) values('{name}','{contact}','{email}','{joined_date}',{psycopg2.Binary(image)}); 
                                     """,placeholder,"Added Successfully")
                         conn=db.connect_db() 
-                        id=db.from_db(conn,f"Select id from officer_record where name='{name}' and contact='{contact}' and email='{email}'")
+                        id=db.from_db(conn,f"Select max(id) from officer_record")
                         conn=db.connect_db() 
                         db.run_query(conn,f"""
                                         insert into authorized(id,username,password,role) values({id[0]},'{username}','{hashed}','Investigator'); 
@@ -153,11 +153,18 @@ def auth_interface(user):
                     )
                     placeholder=st.empty() 
                     st.write('')
+                    conn=db.connect_db()
+                    live_case=db.from_db(conn,f"""
+                                        Select count (case_id) from officer_and_cases where officer_id={remove_user_detail[6]} and status='ongoing' and enrollment='active'
+                                """)
                     if st.button('Remove',use_container_width=True):
-                        conn=db.connect_db() 
-                        db.run_query(conn,f"""Delete from authorized where username='{to_remove}';
-                                            insert into officer_archive(id,left_date) values({remove_user_detail[6]},'{datetime.datetime.now().date()}');
-                                    """,placeholder,"Removed Successfully")
+                        if live_case[0]==0:
+                            conn=db.connect_db() 
+                            db.run_query(conn,f"""Delete from authorized where username='{to_remove}';
+                                                insert into officer_archive(id,left_date) values({remove_user_detail[6]},'{datetime.datetime.now().date()}');
+                                        """,placeholder,"Removed Successfully")
+                        else:
+                            placeholder.error(f'Unable to Remove: {remove_user_detail[0]} has {live_case[0]} enrolled cases.')
                         time.sleep(3)
                         placeholder.empty() 
                 else:
