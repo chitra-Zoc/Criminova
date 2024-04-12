@@ -66,24 +66,73 @@ def hot_cases():
 
 # Load daily new cases data
 def daily_cases():
-    conn=db.connect_db() 
-    daily_new_cases=db.get_all(conn,"""SELECT case_date AS Date, COUNT(*) AS New_Cases
-                                        FROM caseReports
-                                        GROUP BY case_date
-                                        ORDER BY case_date;
-                                    """)
+    conn = db.connect_db() 
+    daily_new_cases = db.get_all(conn, """SELECT case_date AS Date, COUNT(*) AS New_Cases
+                                           FROM caseReports
+                                           GROUP BY case_date
+                                           ORDER BY case_date;
+                                        """)
     try:
-        dataframe=pd.DataFrame(daily_new_cases,columns=['Date','Case Count'])
+        # Convert the result to a DataFrame with proper column names
+        dataframe = pd.DataFrame(daily_new_cases, columns=['Date', 'New_Cases'])
+        
+        # Ensure that 'Date' column is of datetime type
+        dataframe['Date'] = pd.to_datetime(dataframe['Date'])
+        st.write(dataframe)
+        # Check if there are valid dates
+        if not dataframe['Date'].isnull().all():
+            # Reindex the DataFrame to ensure all dates are included
+            min_date = dataframe['Date'].min()
+            max_date = dataframe['Date'].max()
+            if pd.notnull(min_date) and pd.notnull(max_date):
+                all_dates = pd.date_range(start=min_date, end=max_date)
+                dataframe = dataframe.set_index('Date').reindex(all_dates).fillna(0).reset_index()
+                dataframe.columns = ['Date', 'New_Cases']
+        
         # Create a line chart using Plotly Express
-        fig = px.line(dataframe, x=dataframe['Date'], y=dataframe['Case Count'], 
-                    #   title='Daily New Cases', 
-                      labels={'Date': 'Date', 'New Cases': 'New Cases'},
+        fig = px.line(dataframe, x='Date', y='New_Cases', 
+                      labels={'Date': 'Date', 'New_Cases': 'New Cases'},
                       width=800, height=400)
         
         # Display the line chart
-        st.plotly_chart(fig,use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
     except Exception as e:
-        st.error(f'Something went wrong {e}')
+        st.error(f'Something went wrong: {e}')
+
+
+
+def cases_over_time():
+    conn = db.connect_db() 
+    cases_data = db.get_all(conn, """SELECT case_date AS Date,
+                                            COUNT(*) AS Total_Cases,
+                                            SUM(CASE WHEN casestatus = 'solved' THEN 1 ELSE 0 END) AS Solved_Cases,
+                                            SUM(CASE WHEN casestatus = 'closed' THEN 1 ELSE 0 END) AS Closed_Cases
+                                     FROM caseReports
+                                     GROUP BY case_date
+                                     ORDER BY case_date;
+                                  """)
+    try:
+        # Convert the result to a DataFrame with proper column names
+        dataframe = pd.DataFrame(cases_data, columns=['Date', 'Total_Cases', 'Solved_Cases', 'Closed_Cases'])
+        
+        # Ensure that 'Date' column is of datetime type
+        dataframe['Date'] = pd.to_datetime(dataframe['Date'])
+        
+        # Melt the DataFrame to long format for Plotly Express
+        melted_df = dataframe.melt(id_vars=['Date'], var_name='Case_Status', value_name='Case_Count')
+        
+        # Create a line chart using Plotly Express
+        fig = px.line(melted_df, x='Date', y='Case_Count', color='Case_Status',
+                      labels={'Date': 'Date', 'Case_Count': 'Case Count', 'Case_Status': 'Case Status'},
+                    #   title='Cases Over Time',
+                      width=800, height=400)
+        
+        # Display the line chart
+        st.plotly_chart(fig, use_container_width=True)
+    except Exception as e:
+        st.error(f'Something went wrong: {e}')
+
+
 
 def combined_gender_chart():
     conn=db.connect_db() 
@@ -135,7 +184,12 @@ def combined_gender_chart():
 def main(user):
     st.write(f'<p style="color: blue; border-bottom: 1px solid white; margin-top: -50px; font-size: 30px; font-weight: bold">{db.PROJECT} - Dashboard</p>', unsafe_allow_html=True)
     c1,c2=st.columns([2,1])
+    with c1:
+        with st.container(border=True):
+            st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Cases Worm Graph </p>', unsafe_allow_html=True)
+            cases_over_time() 
     with c2:
+        st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold; text-align: center">ShoutBoard</p>', unsafe_allow_html=True)
         msg(user)
     with st.container(border=True):
         st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 20px; font-weight: bold">Daily Cases Trend</p>', unsafe_allow_html=True)
