@@ -160,24 +160,29 @@ def combined_gender_chart():
         suspects_df['Gender'] = suspects_df['Gender'].replace('None', 'Unidentified')
         suspects_df = suspects_df.groupby('Gender', as_index=False).sum()
         
-        # Merge the DataFrames
-        combined_df = pd.merge(victims_df, suspects_df, on='Gender', suffixes=('_Victims', '_Suspects'), how='outer')
-        combined_df['Gender'] = combined_df['Gender'].fillna('Unidentified')
-        combined_df = combined_df.groupby('Gender', as_index=False).sum()
+        if not suspects_df.empty:
+            # Merge the DataFrames
+            combined_df = pd.merge(victims_df, suspects_df, on='Gender', suffixes=('_Victims', '_Suspects'), how='outer')
+            combined_df['Gender'] = combined_df['Gender'].fillna('Unidentified')
+            combined_df = combined_df.groupby('Gender', as_index=False).sum()
 
-        # Create a combined clustered bar chart using Plotly Express
-        fig = px.bar(combined_df, x='Gender', y=['Total_Cases_Victims', 'Total_Cases_Suspects'], 
-                    #  title='Combined Victims and Suspects by Gender', 
-                     labels={'Gender': 'Gender', 'value': 'Total Cases'},
-                     width=800, height=400,
-                     color_discrete_map={'Total_Cases_Victims': 'blue', 'Total_Cases_Suspects': 'orange'},
-                     barmode='group',
-                     )
-        
-        # Display the combined clustered bar chart
-        st.plotly_chart(fig,use_container_width=True)
+            # Create a combined clustered bar chart using Plotly Express
+            fig = px.bar(combined_df, x='Gender', y=['Total_Cases_Victims', 'Total_Cases_Suspects'], 
+                        #  title='Combined Victims and Suspects by Gender', 
+                        labels={'Gender': 'Gender', 'value': 'Total Cases'},
+                        width=800, height=400,
+                        color_discrete_map={'Total_Cases_Victims': 'blue', 'Total_Cases_Suspects': 'orange'},
+                        barmode='group',
+                        )
+            
+            # Display the combined clustered bar chart
+            st.plotly_chart(fig, use_container_width=True, labels={'Gender': 'Gender'})
+        else:
+            # Display only the available data for victims
+            st.warning('Insufficient Data to generate')
     except Exception as e:
-        st.error('Something went wrong:')
+        # Display a warning message if any error occurs
+        st.warning(f'Something went wrong: {e}')
 
 
 # Display line chart for daily new cases
