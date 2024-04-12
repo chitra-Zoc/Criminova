@@ -14,14 +14,14 @@ def query_database(search_off=None):
                         o.name,
                         o.contact,
                         COUNT(oac.case_id) AS total_cases,
-                        (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'closed') AS cases_solved,
+                        (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'solved' AND enrollment='active') AS cases_solved,
                         o.joined_date,
                         o.image,
                         (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'solved' AND enrollment='revised') AS cases_revised,
                         (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'ongoing' AND enrollment='active') AS live_cases
                     FROM 
                         officer_record o
-                    inner JOIN 
+                    LEFT JOIN 
                         officer_and_cases oac ON o.id = oac.officer_id
                     inner join
                         authorized auth ON auth.id=o.id 
@@ -34,14 +34,14 @@ def query_database(search_off=None):
                         o.name,
                         o.contact,
                         COUNT(oac.case_id) AS total_cases,
-                        (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'closed') AS cases_solved,
+                        (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'solved' AND enrollment='active') AS cases_solved,
                         o.joined_date,
                         o.image,
                         (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'solved' AND enrollment='revised') AS cases_revised,
                         (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'ongoing' AND enrollment='active') AS live_cases
                     FROM 
                         officer_record o
-                    inner JOIN 
+                    LEFT JOIN 
                         officer_and_cases oac ON o.id = oac.officer_id
                     inner join
                         authorized auth ON auth.id=o.id 
@@ -67,7 +67,7 @@ def query_archive_database(search_off=None):
                         (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'solved' AND enrollment='revised') AS cases_revised
                     FROM 
                         officer_record o
-                    inner JOIN 
+                    LEFT JOIN 
                         officer_and_cases oac ON o.id = oac.officer_id
                     inner join
                         officer_archive arch ON arch.id=o.id 
@@ -75,7 +75,7 @@ def query_archive_database(search_off=None):
                         o.id, o.name, o.contact, o.joined_date,arch.left_date, o.image;"""
 
     else:
-        query = f"""SELECT 
+        query = """SELECT 
                         o.id AS officer_id,
                         o.joined_date,
                         arch.left_date,
@@ -87,7 +87,7 @@ def query_archive_database(search_off=None):
                         (SELECT COUNT(*) FROM officer_and_cases WHERE officer_id = o.id AND status = 'solved' AND enrollment='revised') AS cases_revised
                     FROM 
                         officer_record o
-                    inner JOIN 
+                    LEFT JOIN 
                         officer_and_cases oac ON o.id = oac.officer_id
                     inner join
                         officer_archive arch ON arch.id=o.id 
