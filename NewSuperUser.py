@@ -1,50 +1,61 @@
 import database as db
 import binascii
 import psycopg2
-import bcrypt
-from PIL import Image
+from datetime import datetime
+
+NAME = 'test'
+CONTACT = 'test'
+JOINED_DATE = datetime.now().date()
+EMAIL = 'abcd@gmail.com'
+USERNAME = 'test'
+IMAGE_PATH = 'icons/victim.jpg'
+PASSWORD = '1234'
+ROLE = 'Investigator'  # Administrator/ Investigator
+IMAGE_DATA = None
+
+# Read image data from file
+with open(IMAGE_PATH, 'rb') as img_file:
+    IMAGE_DATA = img_file.read()
 
 def create_superUser():
     conn = None
-    cur = None
     try:
-        conn = db.connect_db()  # Ensure this function exists in your database module
-        cur = conn.cursor()
+        # Connect to the database
+        conn = db.connect_db()
+        cur=conn.cursor()
+        # Hash the password
+        password_hash = db.hash_generator(PASSWORD)
 
-        # Assuming hash_generator() exists in your db module and returns a bytes object
-        password = db.hash_generator('Criminova@py2080')
-        # Convert the hashed password to a hexadecimal string
-        password_hash = binascii.hexlify(password).decode('utf-8')
+        # Convert the hashed password to hexadecimal string
+        password_hex = binascii.hexlify(password_hash).decode('utf-8')
 
-        # Load the image from file
-        image_path = 'icons/jd.jpg'
-        with open(image_path, 'rb') as img_file:
-            image_data = img_file.read()
+        # Insert data into officer_record table
+        cur.execute(f"""
+            INSERT INTO officer_record (name, contact, email, joined_date, image) 
+            VALUES ('{NAME}', '{CONTACT}', '{EMAIL}', '{JOINED_DATE}', %s)
+            RETURNING id;
+        """, (psycopg2.Binary(IMAGE_DATA),))
+        officer_id = cur.fetchone()[0]
 
-        # Insert the new superuser into the database
-        cur.execute('INSERT INTO authorized_users (username, name, role, password, image) VALUES (%s, %s, %s, %s, %s)',
-                    ('31jay', 'Jayadev Tripathi', 'Administrator', password_hash, image_data))
+        # Insert data into authorized table
+        cur.execute(f"""
+            INSERT INTO authorized (id, username, password, role) 
+            VALUES ({officer_id}, '{USERNAME}', '{password_hex}', '{ROLE}');
+        """)
+
+        # Commit the transaction
         conn.commit()
+        print("Superuser created successfully.")
 
     except (Exception, psycopg2.DatabaseError) as error:
         print("Error:", error)
+        if conn:
+            conn.rollback()
+
     finally:
-        # Properly close cursor and connection in finally block
-        if cur is not None:
-            cur.close()
-        if conn is not None:
+        # Properly close connection in finally block
+        if conn:
             conn.close()
 
 if __name__ == '__main__':
     create_superUser()
-
-
-
-'''# Convert the hexadecimal string back to bytes
-stored_hash_bytes = binascii.unhexlify(stored_hash)
-
-# Verify the entered password against the stored hash
-if bcrypt.checkpw(entered_password.encode(), stored_hash_bytes):
-    print("Password is correct.")
-else:
-    print("Password is incorrect.")'''
