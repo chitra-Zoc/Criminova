@@ -92,6 +92,8 @@ def case_investigation(username):
             conn=db.connect_db()
             selected_case_data=db.fetch_data(conn,table_name='caseReports',check_attributes=f'caseId=\'{st.session_state.selected_case}\'')
             print(selected_case_data)
+            #Case Dashboard Section 
+            st.write('<p style="color: white; border-bottom: 1px solid white; font-size: 25px; font-weight: bold; margin-bottom: 0px">Case Dashboard</p>', unsafe_allow_html=True)
 
             if st.session_state.selected_case is not None:
                 st.write('<br>',unsafe_allow_html=True )
@@ -136,9 +138,6 @@ def case_investigation(username):
                             if closing_st.strip()!='':
                                 conn=db.connect_db() 
                                 msg_place=st.empty() 
-                                officer_id=0
-                                if selected_case_data[9] != 'None' and selected_case_data is not None:
-                                    officer_id=selected_case_data[9].split(': ')[1]
                             # Updates the case status and adds the report to timeline 
                                 db.run_query(conn,f'''
                                             Update caseReports SET casestatus='{case_status}' where caseid='{selected_case_data[1]}';
@@ -159,7 +158,7 @@ def case_investigation(username):
                                                 """,slot=msg_place)
                                     pass 
                                 time.sleep(2)
-                                slot.empty() 
+                                msg_place.empty() 
                                 # st.rerun() 
                             else:
                                 st.error('Fill required field')
@@ -246,7 +245,7 @@ def case_investigation(username):
                                     officer_id_cnt=db.from_db(conn,f"select contact,id from officer_record where id=(select id from authorized where username='{selected_officer_username}')")
                                     conn=db.connect_db() 
                                     db.run_query(conn,f'''
-                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now().date()}','{selected_case_data[1]}','Officer Assigned: {assigned_officer}::Contact: {officer_id_cnt[0]}');
+                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now().date()}','{selected_case_data[1]}','Officer Assigned by {username}:: {assigned_officer}::Contact: {officer_id_cnt[0]}');
                                                 insert into officer_and_cases(officer_id,case_id,status,enrollment,case_assigned_on) values({officer_id_cnt[1]},'{selected_case_data[1]}','ongoing','active','{datetime.datetime.now().date()}');
                                                 ''',msg="Updated to timeline",slot=place_msg) 
                                 if removed_officer is not None :
@@ -256,7 +255,7 @@ def case_investigation(username):
                                     officer_id_cnt=db.from_db(conn,f"select contact,id from officer_record where id=(select id from authorized where username='{selected_officer_username}')")
                                     conn=db.connect_db() 
                                     db.run_query(conn,f'''
-                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now().date()}','{selected_case_data[1]}','Officer Removed: {removed_officer}::Contact: {officer_id_cnt[0]}');
+                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now().date()}','{selected_case_data[1]}','Officer Removed by: {username}:: {removed_officer}::Contact: {officer_id_cnt[0]}');
                                                 Update officer_and_cases set enrollment='archive', case_left_on='{datetime.datetime.now().date()}' where officer_id={officer_id_cnt[1]} and case_id='{selected_case_data[1]}' and enrollment='active';
                                                 ''',msg="Updated to timeline",slot=place_msg) 
                     
@@ -464,7 +463,7 @@ def case_investigation(username):
                                                 <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> id:</b> {officer[0]}</p>
                                                 <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Contact:</b> {officer[2]}</p>
                                                 <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Email:</b> {officer[3]}</p>
-                                                <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Case Assigned On:</b> {officer[4]}</p>
+                                                <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Case Assigned On:</b> {officer[5]}</p>
                                             
                                             """, unsafe_allow_html=True)
                             else:
@@ -484,8 +483,8 @@ def case_investigation(username):
                                                 <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> id:</b> {officer[0]}</p>
                                                 <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Contact:</b> {officer[2]}</p>
                                                 <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Email:</b> {officer[3]}</p>
-                                                <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Case Assigned On:</b> {officer[4]}</p>
-                                                <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Case Left On:</b> {officer[5]}</p>
+                                                <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Case Assigned On:</b> {officer[5]}</p>
+                                                <p style='margin-bottom: 2px; font-size: 12px; font-weight: bold; font-family: "Lucida Console", "Times New"; color: white;'><b style="color:grey"> Case Left On:</b> {officer[6]}</p>
                                             
                                             """, unsafe_allow_html=True)
                             else:
@@ -654,11 +653,12 @@ def case_investigation(username):
                             html_content += f"<p style='margin-bottom: 5px;'><span class='date'><b>{date}</b></span>: <span class='activity'>{activity}</span></p>"
 
                         st.markdown(html_content, unsafe_allow_html=True)
-            # else:           
-            #     emp_col,s_col1,s_col2,emp_col2=st.columns([2,2,3,2])
-            #     with s_col1:
-            #         st.image('icons\icon.png',width=200)
-            #     with s_col2:
-            #         st.image('icons\dashboard_empty.png',use_column_width=True)
+            else:     
+                st.write('No case Selected')
+                # emp_col,s_col1,s_col2,emp_col2=st.columns([2,2,3,2])
+                # with s_col1:
+                #     st.image('icons\icon.png',width=200)
+                # with s_col2:
+                #     st.image('icons\dashboard_empty.png',use_column_width=True)
     except Exception as e:
         st.warning(f'Something wrong with database: {e}')
