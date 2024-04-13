@@ -136,7 +136,6 @@ def new_case_report():
                         Insert into caseReports(caseNo,caseId,case_date,nature_of_case,case_description,lat,lng) 
                         values({case_number},'{case_id}','{case_date}','{nature_of_case}','{case_description}',{lat},{lng});
                         UPDATE nature_of_case SET case_count=case_count+1 WHERE nature_of_case='{nature_of_case}';
-                        update caseReports set investigator='None' where caseid='{case_id}';
                         Insert into case_timeline(caseid,date,activity) values('{case_id}','{datetime.datetime.now().date()}','Case Registered')
                         ''',
                         msg='Case Reported Successfully !',slot=place)
