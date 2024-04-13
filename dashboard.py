@@ -78,7 +78,6 @@ def daily_cases():
         
         # Ensure that 'Date' column is of datetime type
         dataframe['Date'] = pd.to_datetime(dataframe['Date'])
-        st.write(dataframe)
         # Check if there are valid dates
         if not dataframe['Date'].isnull().all():
             # Reindex the DataFrame to ensure all dates are included
