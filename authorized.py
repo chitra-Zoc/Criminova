@@ -7,7 +7,7 @@ import time
 import binascii
 import psycopg2
 import bcrypt
-
+ 
 ROLES=['Investigator']
 
 def get_confirmation():

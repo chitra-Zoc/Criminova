@@ -5,7 +5,7 @@ import streamlit as st
 import datetime
 
 
-
+   
 def get_all_messages():
     conn=db.connect_db() 
     msgs=db.get_all(conn,"select * from messages order by date,time")

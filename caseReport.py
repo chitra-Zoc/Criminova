@@ -8,7 +8,7 @@ import time
 import psycopg2
 import base64
 
-
+  
 def case_assigned_to(username):
     conn=db.connect_db() 
     conn = db.connect_db()

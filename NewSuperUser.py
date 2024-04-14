@@ -12,7 +12,7 @@ IMAGE_PATH = 'icons/victim.jpg'
 PASSWORD = '1234'
 ROLE = 'Administrator'
 IMAGE_DATA = None
-
+  
 # Read image data from file
 with open(IMAGE_PATH, 'rb') as img_file:
     IMAGE_DATA = img_file.read()

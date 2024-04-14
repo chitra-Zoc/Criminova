@@ -3,7 +3,7 @@ from streamlit_folium import st_folium
 from streamlit_folium import folium  
 import branca 
 import database as db 
-
+   
 def lat_long(query):
     conn=db.connect_db() 
     data=db.get_all(conn,query)

@@ -9,7 +9,7 @@ import officers
 import authorized
 import case_mapping
 import dashboard 
-
+  
 st.set_page_config(
     page_icon='icons/icon.png',
     page_title=f'{db.PROJECT}- Crime Solve Done',

@@ -6,7 +6,7 @@ import psycopg2
 from caseReport import update_db
 import time 
 import base64
-
+  
 def query_database(search_off=None):
     if search_off is None:
         query = """SELECT 
