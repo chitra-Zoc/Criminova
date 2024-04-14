@@ -16,7 +16,7 @@ def case_assigned_to(username):
                        from caseReports cs JOIN
                        officer_and_cases oc
                        ON cs.caseid=oc.case_id
-                       WHERE oc.officer_id=(select id from authorized where username='{username}') """)
+                       WHERE oc.officer_id=(select id from authorized where username='{username}') and status='ongoing' and enrollment='active'""")
     cases_df = pd.DataFrame(cases, columns=['Case Number', 'Case ID', 'Date', 'Nature of Case','Case Description','Case Status'])
     case_ids = cases_df['Case ID'].tolist()
     return cases_df, case_ids 
@@ -141,11 +141,12 @@ def case_investigation(username):
                             # Updates the case status and adds the report to timeline 
                                 db.run_query(conn,f'''
                                             Update caseReports SET casestatus='{case_status}' where caseid='{selected_case_data[1]}';
-                                            Insert into case_timeline(caseid,date,activity) values('{selected_case_data[1]}','{datetime.datetime.now().date()}','Case Status: {case_status} Remark: {closing_st}');
+                                            Insert into case_timeline(caseid,date,activity) values('{selected_case_data[1]}','{datetime.datetime.now()}','Case Status: {case_status} Remark: {closing_st} ::User:{username}');
                                             ''',msg="Case Status Updated",slot=msg_place)
                                 conn=db.connect_db() 
                                 if case_status=='solved':
-                                    db.run_query(conn,f"""update officer_and_cases set status='solved' where case_id='{selected_case_data[1]}' and status='ongoing' and enrollment='active';
+                                    db.run_query(conn,f"""
+                                                 update officer_and_cases set status='solved',case_left_on='{datetime.datetime.now().date()}' where case_id='{selected_case_data[1]}' and status='ongoing' and enrollment='active';    
                                                 """,slot=msg_place)
                                 elif case_status=='ongoing':
                                         db.run_query(conn,f"""
@@ -154,12 +155,13 @@ def case_investigation(username):
                                     
                                 elif case_status=='closed':
                                     db.run_query(conn,f"""
-                                                        update officer_and_cases set status='closed', enrollment='archive where case_id='{selected_case_data[1]}' and status='ongoing' and enrollment='active';
+                                                        update officer_and_cases set status='closed', enrollment='archive',case_left_on='{datetime.datetime.now().date()}' where case_id='{selected_case_data[1]}' and status='ongoing' and enrollment='active';
+
                                                 """,slot=msg_place)
                                     pass 
                                 time.sleep(2)
                                 msg_place.empty() 
-                                # st.rerun() 
+                                st.rerun() 
                             else:
                                 st.error('Fill required field')
                     s1,s2=st.columns([1,1])
@@ -233,7 +235,7 @@ def case_investigation(username):
                                 if nature_of_case is not None and nature_of_case!=selected_case_data[3]:
                                     conn=db.connect_db() 
                                     db.run_query(conn,f"""Update caseReports set nature_of_case='{nature_of_case}' where caseid='{selected_case_data[1]}';
-                                                        Insert into case_timeline(caseid,date,activity) values('{selected_case_data[1]}','{datetime.datetime.now().date()}','Nature of Case Changed: {selected_case_data[3]} :-> {nature_of_case}');
+                                                        Insert into case_timeline(caseid,date,activity) values('{selected_case_data[1]}','{datetime.datetime.now()}','Nature of Case Changed: {selected_case_data[3]} :-> {nature_of_case}');
                                                         Update nature_of_case set case_count=case_count-1 where nature_of_case='{selected_case_data[3]}';
                                                         Update nature_of_case set case_count=case_count+1 where nature_of_case='{nature_of_case}';
                                                     """,msg='Updated to CaseReports',slot=place_msg)
@@ -244,10 +246,15 @@ def case_investigation(username):
                                     conn=db.connect_db() 
                                     officer_id_cnt=db.from_db(conn,f"select contact,id from officer_record where id=(select id from authorized where username='{selected_officer_username}')")
                                     conn=db.connect_db() 
-                                    db.run_query(conn,f'''
-                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now().date()}','{selected_case_data[1]}','Officer Assigned by {username}:: {assigned_officer}::Contact: {officer_id_cnt[0]}');
-                                                insert into officer_and_cases(officer_id,case_id,status,enrollment,case_assigned_on) values({officer_id_cnt[1]},'{selected_case_data[1]}','ongoing','active','{datetime.datetime.now().date()}');
-                                                ''',msg="Updated to timeline",slot=place_msg) 
+                                    already_enrolled=db.from_db(conn,f"select * from officer_and_cases where officer_id='{officer_id_cnt[1]}' and case_id='{selected_case_data[1]}' and status='ongoing' and enrollment='active';")
+                                    if already_enrolled is None:
+                                        conn=db.connect_db()
+                                        db.run_query(conn,f'''
+                                                    insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now()}','{selected_case_data[1]}','Officer Assigned by {username}:: {assigned_officer}::Contact: {officer_id_cnt[0]}');
+                                                    insert into officer_and_cases(officer_id,case_id,status,enrollment,case_assigned_on) values({officer_id_cnt[1]},'{selected_case_data[1]}','ongoing','active','{datetime.datetime.now().date()}');
+                                                    ''',msg="Updated to timeline",slot=place_msg) 
+                                    else:
+                                        place_msg.info('Investigator is already in the case.')
                                 if removed_officer is not None :
                                     # Extract the selected officer ID from the selected option
                                     selected_officer_username = removed_officer.split(': ')[1]
@@ -255,7 +262,7 @@ def case_investigation(username):
                                     officer_id_cnt=db.from_db(conn,f"select contact,id from officer_record where id=(select id from authorized where username='{selected_officer_username}')")
                                     conn=db.connect_db() 
                                     db.run_query(conn,f'''
-                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now().date()}','{selected_case_data[1]}','Officer Removed by: {username}:: {removed_officer}::Contact: {officer_id_cnt[0]}');
+                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now()}','{selected_case_data[1]}','Officer Removed by: {username}:: {removed_officer}::Contact: {officer_id_cnt[0]}');
                                                 Update officer_and_cases set enrollment='archive', case_left_on='{datetime.datetime.now().date()}' where officer_id={officer_id_cnt[1]} and case_id='{selected_case_data[1]}' and enrollment='active';
                                                 ''',msg="Updated to timeline",slot=place_msg) 
                     
@@ -390,7 +397,7 @@ def case_investigation(username):
                                 if evidence_name.strip() and description.strip():
                                     conn=db.connect_db()
                                     db.run_query(conn,f'''insert into evidence(case_id,name,description) values('{selected_case_data[1]}','{evidence_name}','{description}');
-                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now().date()}','{selected_case_data[1]}','Evidence Added: {evidence_name}');
+                                                insert into case_timeline(date,caseid,activity) values ('{datetime.datetime.now()}','{selected_case_data[1]}','Evidence Added: {evidence_name}');
                                                 Update evidence set image={psycopg2.Binary(image)} where case_id='{selected_case_data[1]}' and name='{evidence_name}' and description='{description}';
                                                 ''',msg='Added Successfully',slot=label)
                                 else:
@@ -444,7 +451,7 @@ def case_investigation(username):
                                                          """)
                         conn=db.connect_db() 
                         former_investigators=db.get_all(conn,f"""
-                                                         Select id, name, contact, email, image, case_assigned_on,case_left_on from
+                                                         Select distinct id, name, contact, email, image, case_assigned_on,case_left_on from
                                                          officer_record off INNER JOIN officer_and_cases oc ON off.id=oc.officer_id
                                                          WHERE case_id='{selected_case_data[1]}' and ((status='ongoing' and enrollment='archive') or status!='ongoing')
                                                          """)
@@ -631,7 +638,7 @@ def case_investigation(username):
                             conn=db.connect_db() 
                         # Updates the case status and adds the report to timeline 
                             db.run_query(conn,f'''
-                                            Insert into case_timeline(caseid,date,activity) values('{selected_case_data[1]}','{datetime.datetime.now().date()}','{timeline}')
+                                            Insert into case_timeline(caseid,date,activity) values('{selected_case_data[1]}','{datetime.datetime.now()}','{timeline}::{username}')
                                             ''',msg="Updated to timeline",slot=slot)
                             time.sleep(2)
                             st.rerun() 
@@ -648,7 +655,8 @@ def case_investigation(username):
                         html_content += "<h4 style='border-bottom: 1px solid grey; line-height: 0; margin-bottom: 10px;'>Case Timeline</h4>"
 
                         # Iterating over each entry in the timeline
-                        for date, activity in fetched_timeline:
+                        for c_date, activity in fetched_timeline:
+                            date=f'{c_date.date()}[{c_date.hour}:{c_date.minute}]'
                             # Formatting each entry with colored span tags
                             html_content += f"<p style='margin-bottom: 5px;'><span class='date'><b>{date}</b></span>: <span class='activity'>{activity}</span></p>"
 
