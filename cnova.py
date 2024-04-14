@@ -12,7 +12,7 @@ import dashboard
 
 st.set_page_config(
     page_icon='icons/icon.png',
-    page_title=f'{db.PROJECT}-Solving Crime Together',
+    page_title=f'{db.PROJECT}',
     layout='wide'
 )
 
