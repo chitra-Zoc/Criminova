@@ -113,23 +113,30 @@ def cases_over_time():
     try:
         # Convert the result to a DataFrame with proper column names
         dataframe = pd.DataFrame(cases_data, columns=['Date', 'Total_Cases', 'Solved_Cases', 'Closed_Cases'])
-        
         # Ensure that 'Date' column is of datetime type
         dataframe['Date'] = pd.to_datetime(dataframe['Date'])
-        
+
+        # Sort the dataframe by Date to ensure correct cumulative calculations
+        dataframe.sort_values('Date', inplace=True)
+
+        # Calculate cumulative sums for the case counts
+        dataframe['Total_Cases'] = dataframe['Total_Cases'].cumsum()
+        dataframe['Solved_Cases'] = dataframe['Solved_Cases'].cumsum()
+        dataframe['Closed_Cases'] = dataframe['Closed_Cases'].cumsum()
+
         # Melt the DataFrame to long format for Plotly Express
         melted_df = dataframe.melt(id_vars=['Date'], var_name='Case_Status', value_name='Case_Count')
         
         # Create a line chart using Plotly Express
         fig = px.line(melted_df, x='Date', y='Case_Count', color='Case_Status',
                       labels={'Date': 'Date', 'Case_Count': 'Case Count', 'Case_Status': 'Case Status'},
-                    #   title='Cases Over Time',
                       width=800, height=400)
         
         # Display the line chart
         st.plotly_chart(fig, use_container_width=True)
     except Exception as e:
         st.error(f'Something went wrong: {e}')
+
 
 
 
