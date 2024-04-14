@@ -6,7 +6,7 @@ import folium
 from streamlit_folium import st_folium
 from fuzzywuzzy import process
 
-PROJECT="CrimeNetX- Crime Solve Done"
+PROJECT="CrimeNetX"
 
 
 
